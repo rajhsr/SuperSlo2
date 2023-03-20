@@ -12,6 +12,7 @@ import model
 import dataloader
 import platform
 from tqdm import tqdm
+import numpy as np
 
 # For parsing commandline arguments
 parser = argparse.ArgumentParser()
@@ -203,6 +204,7 @@ def main():
                 intrpOut = ArbTimeFlowIntrp(torch.cat((I0, I1, F_0_1, F_1_0, F_t_1, F_t_0, g_I1_F_t_1, g_I0_F_t_0), dim=1))
 
                 F_t_0_f = intrpOut[:, :2, :, :] + F_t_0
+                F_t_0_f_t=F_t_0_f.nupmy
                 F_t_1_f = intrpOut[:, 2:4, :, :] + F_t_1
                 V_t_0   = torch.sigmoid(intrpOut[:, 4:5, :, :])
                 V_t_1   = 1 - V_t_0
