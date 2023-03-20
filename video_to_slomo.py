@@ -188,12 +188,7 @@ def main():
             flowOut = flowComp(torch.cat((I0, I1), dim=1))
             F_0_1 = flowOut[:,:2,:,:]
             F_1_0 = flowOut[:,2:,:,:]
-
-            # Save reference frames in output folder
-            for batchIndex in range(args.batch_size):
-                (TP(frame0[batchIndex].detach())).resize(videoFrames.origDim, Image.BILINEAR).save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
-            frameCounter += 1
-
+            
             # Generate intermediate frames
             for intermediateIndex in range(1, args.sf):
                 t = float(intermediateIndex) / args.sf
@@ -257,9 +252,13 @@ def main():
 
                 # Save intermediate frame
                 for batchIndex in range(args.batch_size):
-                    temp=(TP(F_t_0_fe[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
-                    temp.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
-                frameCounter += 1
+                    temp1=(TP(F_t_0_fe[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
+                    temp1.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
+
+                    temp2=(TP(F_t_1_fe[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
+                    temp2.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
+
+                frameCounter += 2
 
             # Set counter accounting for batching of frames
             frameCounter += args.sf * (args.batch_size - 1)
