@@ -13,6 +13,8 @@ import dataloader
 import platform
 from tqdm import tqdm
 import numpy as np
+import tensorflow as tf
+
 
 # For parsing commandline arguments
 parser = argparse.ArgumentParser()
@@ -178,7 +180,10 @@ def main():
         for _, (frame0, frame1) in enumerate(tqdm(videoFramesloader), 0):
             idx=idx+1
             I0 = frame0.to(device)
+            print('I0.size()')
+            print(I0.size())
             I1 = frame1.to(device)
+            print(I1.size())
 
             flowOut = flowComp(torch.cat((I0, I1), dim=1))
             F_0_1 = flowOut[:,:2,:,:]
@@ -204,25 +209,31 @@ def main():
                 intrpOut = ArbTimeFlowIntrp(torch.cat((I0, I1, F_0_1, F_1_0, F_t_1, F_t_0, g_I1_F_t_1, g_I0_F_t_0), dim=1))
 
                 F_t_0_f = intrpOut[:, :2, :, :] + F_t_0
-                F_t_0_f_n=F_t_0_f.cpu().numpy()
-                F_t_1_f = intrpOut[:, 2:4, :, :] + F_t_1
-                F_t_1_f_n=F_t_1_f.cpu().numpy()
-                
-                path1='/content/Flow0_npy'
-                isExist = os.path.exists(path1)
-                if isExist==False:
-                    os.mkdir(path1)
-                filename1 = 'Input_%04d' % (idx)
-                name1=os.path.join(path1,filename1)
-                np.save(name1,F_t_0_f_n)
+                F_t_0_f1 = F_t_0_f[:,1,:,:]
+                F_t_0_f1=tf.reshape(F_t_0_f1.cpu(),[3,1,32,32])
+                F_t_0_fe = tf.concat((F_t_0_f.cpu(), F_t_0_f1.cpu()), axis=1)
 
-                path2='/content/Flow1_npy'
-                isExist = os.path.exists(path2)
-                if isExist==False:
-                    os.mkdir(path2)
-                filename2 = 'Input_%04d' % (idx)
-                name2=os.path.join(path2,filename2)
-                np.save(name2,F_t_1_f_n)
+                F_t_1_f = intrpOut[:, 2:4, :, :] + F_t_1
+                F_t_1_f1 = F_t_1_f[:,1,:,:]
+                F_t_1_f1=tf.reshape(F_t_1_f1.cpu(),[3,1,32,32])
+                F_t_1_fe = tf.concat((F_t_1_f.cpu(), F_t_1_f1.cpu()), axis=1)
+            
+
+                # path1='/content/Flow0_npy'
+                # isExist = os.path.exists(path1)
+                # if isExist==False:
+                #     os.mkdir(path1)
+                # filename1 = 'Input_%04d' % (idx)
+                # name1=os.path.join(path1,filename1)
+                # np.save(name1,F_t_0_f_n)
+
+                # path2='/content/Flow1_npy'
+                # isExist = os.path.exists(path2)
+                # if isExist==False:
+                #     os.mkdir(path2)
+                # filename2 = 'Input_%04d' % (idx)
+                # name2=os.path.join(path2,filename2)
+                # np.save(name2,F_t_1_f_n)
 
                 V_t_0   = torch.sigmoid(intrpOut[:, 4:5, :, :])
                 V_t_1   = 1 - V_t_0
@@ -233,10 +244,17 @@ def main():
                 wCoeff = [1 - t, t]
 
                 Ft_p = (wCoeff[0] * V_t_0 * g_I0_F_t_0_f + wCoeff[1] * V_t_1 * g_I1_F_t_1_f) / (wCoeff[0] * V_t_0 + wCoeff[1] * V_t_1)
-
+                
+                print('Ft_p')
+                print(Ft_p)
+                print('F_t_0_fe')
+                print(F_t_0_fe)
                 # Save intermediate frame
                 for batchIndex in range(args.batch_size):
-                    (TP(Ft_p[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR).save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
+                    temp=(TP(F_t_0_fe[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
+                    print('temp.size()')
+                    print(temp)
+                    temp.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
                 frameCounter += 1
 
             # Set counter accounting for batching of frames
