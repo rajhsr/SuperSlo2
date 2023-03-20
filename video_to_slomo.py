@@ -209,14 +209,24 @@ def main():
                 intrpOut = ArbTimeFlowIntrp(torch.cat((I0, I1, F_0_1, F_1_0, F_t_1, F_t_0, g_I1_F_t_1, g_I0_F_t_0), dim=1))
 
                 F_t_0_f = intrpOut[:, :2, :, :] + F_t_0
+                # print('F_t_0_f')
+                # print(F_t_0_f.shape)
                 F_t_0_f1 = F_t_0_f[:,1,:,:]
-                F_t_0_f1=tf.reshape(F_t_0_f1.cpu(),[3,1,32,32])
-                F_t_0_fe = tf.concat((F_t_0_f.cpu(), F_t_0_f1.cpu()), axis=1)
+                # print('F_t_0_f1')
+                # print(F_t_0_f1.shape)
+                F_t_0_f1= torch.reshape(F_t_0_f1,[3,1,32,32])
+                F_t_0_fe = torch.concat((F_t_0_f, F_t_0_f1), axis=1)
+                # print('F_t_0_fe')
+                # print(F_t_0_fe.shape)
+
+                # F_t_0_f1= torch.reshape(F_t_0_f1.cpu(),[3,1,32,32])
+                # F_t_0_fe = tf.concat((F_t_0_f.cpu(), F_t_0_f1.cpu()), axis=1)
+
 
                 F_t_1_f = intrpOut[:, 2:4, :, :] + F_t_1
                 F_t_1_f1 = F_t_1_f[:,1,:,:]
-                F_t_1_f1=tf.reshape(F_t_1_f1.cpu(),[3,1,32,32])
-                F_t_1_fe = tf.concat((F_t_1_f.cpu(), F_t_1_f1.cpu()), axis=1)
+                F_t_1_f1= torch.reshape(F_t_1_f1,[3,1,32,32])
+                F_t_1_fe = torch.concat((F_t_1_f, F_t_1_f1), axis=1)
             
 
                 # path1='/content/Flow0_npy'
@@ -244,16 +254,10 @@ def main():
                 wCoeff = [1 - t, t]
 
                 Ft_p = (wCoeff[0] * V_t_0 * g_I0_F_t_0_f + wCoeff[1] * V_t_1 * g_I1_F_t_1_f) / (wCoeff[0] * V_t_0 + wCoeff[1] * V_t_1)
-                
-                print('Ft_p')
-                print(Ft_p)
-                print('F_t_0_fe')
-                print(F_t_0_fe)
+
                 # Save intermediate frame
                 for batchIndex in range(args.batch_size):
                     temp=(TP(F_t_0_fe[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
-                    print('temp.size()')
-                    print(temp)
                     temp.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
                 frameCounter += 1
 
