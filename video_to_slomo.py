@@ -204,10 +204,10 @@ def main():
                 intrpOut = ArbTimeFlowIntrp(torch.cat((I0, I1, F_0_1, F_1_0, F_t_1, F_t_0, g_I1_F_t_1, g_I0_F_t_0), dim=1))
 
                 F_t_0_f = intrpOut[:, :2, :, :] + F_t_0
-                F_t_0_f_n=F_t_0_f.numpy()
+                F_t_0_f_n=F_t_0_f.cpu().numpy()
                 F_t_1_f = intrpOut[:, 2:4, :, :] + F_t_1
-                F_t_1_f_n=F_t_1_f.numpy()
-
+                F_t_1_f_n=F_t_1_f.cpu().numpy()
+                
                 path1='/content/Flow0_npy'
                 isExist = os.path.exists(path1)
                 if isExist==False:
