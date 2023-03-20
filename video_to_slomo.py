@@ -216,7 +216,7 @@ def main():
 
                 # Save intermediate frame
                 for batchIndex in range(args.batch_size):
-                    (TP(Ft_p[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR).save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
+                    (TP(F_t_0_f[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR).save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
                 frameCounter += 1
 
             # Set counter accounting for batching of frames
