@@ -173,10 +173,10 @@ def main():
 
     # Interpolate frames
     frameCounter = 1
-
+    idx=0
     with torch.no_grad():
         for _, (frame0, frame1) in enumerate(tqdm(videoFramesloader), 0):
-
+            idx=idx+1
             I0 = frame0.to(device)
             I1 = frame1.to(device)
 
@@ -204,8 +204,26 @@ def main():
                 intrpOut = ArbTimeFlowIntrp(torch.cat((I0, I1, F_0_1, F_1_0, F_t_1, F_t_0, g_I1_F_t_1, g_I0_F_t_0), dim=1))
 
                 F_t_0_f = intrpOut[:, :2, :, :] + F_t_0
-                F_t_0_f_t=F_t_0_f.nupmy
+                F_t_0_f_n=F_t_0_f.numpy()
                 F_t_1_f = intrpOut[:, 2:4, :, :] + F_t_1
+                F_t_1_f_n=F_t_1_f.numpy()
+
+                path1='/content/Flow0_npy'
+                isExist = os.path.exists(path1)
+                if isExist==False:
+                    os.mkdir(path1)
+                filename1 = 'Input_%04d' % (idx)
+                name1=os.path.join(path1,filename1)
+                np.save(name1,F_t_0_f_n)
+
+                path2='/content/Flow1_npy'
+                isExist = os.path.exists(path2)
+                if isExist==False:
+                    os.mkdir(path2)
+                filename2 = 'Input_%04d' % (idx)
+                name2=os.path.join(path2,filename2)
+                np.save(name2,F_t_1_f_n)
+
                 V_t_0   = torch.sigmoid(intrpOut[:, 4:5, :, :])
                 V_t_1   = 1 - V_t_0
 
@@ -218,7 +236,7 @@ def main():
 
                 # Save intermediate frame
                 for batchIndex in range(args.batch_size):
-                    (TP(F_t_0_f[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR).save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
+                    (TP(Ft_p[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR).save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
                 frameCounter += 1
 
             # Set counter accounting for batching of frames
