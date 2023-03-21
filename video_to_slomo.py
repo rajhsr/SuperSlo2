@@ -188,6 +188,7 @@ def main():
             flowOut = flowComp(torch.cat((I0, I1), dim=1))
             F_0_1 = flowOut[:,:2,:,:]
             F_1_0 = flowOut[:,2:,:,:]
+
             
             # Generate intermediate frames
             for intermediateIndex in range(1, args.sf):
@@ -197,6 +198,8 @@ def main():
 
                 F_t_0 = fCoeff[0] * F_0_1 + fCoeff[1] * F_1_0
                 F_t_1 = fCoeff[2] * F_0_1 + fCoeff[3] * F_1_0
+
+               
 
                 g_I0_F_t_0 = flowBackWarp(I0, F_t_0)
                 g_I1_F_t_1 = flowBackWarp(I1, F_t_1)
@@ -265,10 +268,17 @@ def main():
                     
                     frameCounter += 1 
                     
-                    temp2=(TP(F_0_1[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
-                    temp2.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
-
+                
+                
                 frameCounter += 1
+                
+            F_0_1_c = F_0_1[:,1,:,:]
+            F_0_1_c = torch.reshape(F_0_1_c,[3,1,32,32])
+            F_0_1_f = torch.concat((F_0_1, F_0_1_c), axis=1)
+            temp2=(TP(F_0_1_f[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
+            temp2.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
+
+                
 
             # Set counter accounting for batching of frames
             frameCounter += args.sf * (args.batch_size - 1)
