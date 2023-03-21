@@ -254,7 +254,9 @@ def main():
                 for batchIndex in range(args.batch_size):
                     temp1=(TP(F_t_0_fe[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
                     temp1.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
-
+                    
+                    frameCounter += 1 
+                    
                     temp2=(TP(F_t_1_fe[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
                     temp2.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
 
