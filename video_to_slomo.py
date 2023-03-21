@@ -258,7 +258,7 @@ def main():
                     temp2=(TP(F_t_1_fe[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
                     temp2.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
 
-                frameCounter += 2
+                frameCounter += 1
 
             # Set counter accounting for batching of frames
             frameCounter += args.sf * (args.batch_size - 1)
