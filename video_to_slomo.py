@@ -180,10 +180,7 @@ def main():
         for _, (frame0, frame1) in enumerate(tqdm(videoFramesloader), 0):
             idx=idx+1
             I0 = frame0.to(device)
-            print('I0.size()')
-            print(I0.size())
             I1 = frame1.to(device)
-            print(I1.size())
 
             flowOut = flowComp(torch.cat((I0, I1), dim=1))
             F_0_1 = flowOut[:,:2,:,:]
@@ -255,28 +252,20 @@ def main():
 
                 # Save intermediate frame
                 for batchIndex in range(args.batch_size):
-#                     temp1=(TP(F_t_0_fe[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
-#                     temp1.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
-                    
-#                     frameCounter += 1 
-                    
-#                     temp2=(TP(F_t_1_fe[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
-#                     temp2.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
-
                     temp1=(TP(F_t_0_fe[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
                     temp1.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
                     
                     frameCounter += 1 
-                    
-                
-                
+
+                    F_0_1_c = F_0_1[:,1,:,:]
+                    F_0_1_c = torch.reshape(F_0_1_c,[3,1,32,32])
+                    F_0_1_f = torch.concat((F_0_1, F_0_1_c), axis=1)
+
+                    temp2=(TP(F_0_1_f[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
+                    temp2.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
+
                 frameCounter += 1
-                
-            F_0_1_c = F_0_1[:,1,:,:]
-            F_0_1_c = torch.reshape(F_0_1_c,[3,1,32,32])
-            F_0_1_f = torch.concat((F_0_1, F_0_1_c), axis=1)
-            temp2=(TP(F_0_1_f[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
-            temp2.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
+
 
                 
 
