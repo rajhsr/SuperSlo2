@@ -185,7 +185,11 @@ def main():
             flowOut = flowComp(torch.cat((I0, I1), dim=1))
             F_0_1 = flowOut[:,:2,:,:]
             F_1_0 = flowOut[:,2:,:,:]
-
+            
+            # Save reference frames in output folder
+            for batchIndex in range(args.batch_size):
+                (TP(frame0[batchIndex].detach())).resize(videoFrames.origDim, Image.BILINEAR).save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex) + ".png"))
+            frameCounter += 1
             
             # Generate intermediate frames
             for intermediateIndex in range(1, args.sf):
@@ -203,42 +207,11 @@ def main():
 
                 intrpOut = ArbTimeFlowIntrp(torch.cat((I0, I1, F_0_1, F_1_0, F_t_1, F_t_0, g_I1_F_t_1, g_I0_F_t_0), dim=1))
 
+                sx,sy=videoFrames.origDim
+
                 F_t_0_f = intrpOut[:, :2, :, :] + F_t_0
-                # print('F_t_0_f')
-                # print(F_t_0_f.shape)
-                F_t_0_f1 = F_t_0_f[:,1,:,:]
-                # print('F_t_0_f1')
-                # print(F_t_0_f1.shape)
-                F_t_0_f1= torch.reshape(F_t_0_f1,[3,1,32,32])
-                F_t_0_fe = torch.concat((F_t_0_f, F_t_0_f1), axis=1)
-                # print('F_t_0_fe')
-                # print(F_t_0_fe.shape)
-
-                # F_t_0_f1= torch.reshape(F_t_0_f1.cpu(),[3,1,32,32])
-                # F_t_0_fe = tf.concat((F_t_0_f.cpu(), F_t_0_f1.cpu()), axis=1)
-
-
                 F_t_1_f = intrpOut[:, 2:4, :, :] + F_t_1
-                F_t_1_f1 = F_t_1_f[:,1,:,:]
-                F_t_1_f1= torch.reshape(F_t_1_f1,[3,1,32,32])
-                F_t_1_fe = torch.concat((F_t_1_f, F_t_1_f1), axis=1)
             
-
-                # path1='/content/Flow0_npy'
-                # isExist = os.path.exists(path1)
-                # if isExist==False:
-                #     os.mkdir(path1)
-                # filename1 = 'Input_%04d' % (idx)
-                # name1=os.path.join(path1,filename1)
-                # np.save(name1,F_t_0_f_n)
-
-                # path2='/content/Flow1_npy'
-                # isExist = os.path.exists(path2)
-                # if isExist==False:
-                #     os.mkdir(path2)
-                # filename2 = 'Input_%04d' % (idx)
-                # name2=os.path.join(path2,filename2)
-                # np.save(name2,F_t_1_f_n)
 
                 V_t_0   = torch.sigmoid(intrpOut[:, 4:5, :, :])
                 V_t_1   = 1 - V_t_0
@@ -250,25 +223,34 @@ def main():
 
                 Ft_p = (wCoeff[0] * V_t_0 * g_I0_F_t_0_f + wCoeff[1] * V_t_1 * g_I1_F_t_1_f) / (wCoeff[0] * V_t_0 + wCoeff[1] * V_t_1)
 
+
                 # Save intermediate frame
                 for batchIndex in range(args.batch_size):
-                    temp1=(TP(F_t_0_fe[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
-                    temp1.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
+                    temp=(TP(Ft_p[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
+                    temp.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
                     
-                    frameCounter += 1 
+                    temp1=F_t_0_f.numpy()
+                    path1='/content/Flow0_npy/'
+                    isExist = os.path.exists(path1)
+                    if isExist==False:
+                         os.mkdir(path1)
+                    filename1 = str(frameCounter + args.sf * batchIndex).zfill(8) + ".npy"
+                    name1=os.path.join(path1,filename1)
+                    np.save(name1,temp1)
 
-                    F_0_1_c = F_0_1[:,1,:,:]
-                    F_0_1_c = torch.reshape(F_0_1_c,[3,1,32,32])
-                    F_0_1_f = torch.concat((F_0_1, F_0_1_c), axis=1)
 
-                    temp2=(TP(F_0_1_f[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
-                    temp2.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
+                    temp2=F_t_1_f.numpy()
+                    path2='/content/Flow1_npy/'
+                    isExist = os.path.exists(path2)
+                    if isExist==False:
+                         os.mkdir(path2)
+                    filename2 = str(frameCounter + args.sf * batchIndex).zfill(8) + ".npy"
+                    name2=os.path.join(path2,filename2)
+                    np.save(name2,temp2)
 
                 frameCounter += 1
 
-
                 
-
             # Set counter accounting for batching of frames
             frameCounter += args.sf * (args.batch_size - 1)
 
