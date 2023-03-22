@@ -248,6 +248,26 @@ def main():
                     name2=os.path.join(path2,filename2)
                     np.save(name2,temp2)
 
+                    temp1=F_0_1.numpy()
+                    path1='/content/Flow01_npy/'
+                    isExist = os.path.exists(path1)
+                    if isExist==False:
+                         os.mkdir(path1)
+                    filename1 = str(frameCounter + args.sf * batchIndex).zfill(8) + ".npy"
+                    name1=os.path.join(path1,filename1)
+                    np.save(name1,temp1)
+
+
+                    temp2=F_1_0.numpy()
+                    path2='/content/Flow10_npy/'
+                    isExist = os.path.exists(path2)
+                    if isExist==False:
+                         os.mkdir(path2)
+                    filename2 = str(frameCounter + args.sf * batchIndex).zfill(8) + ".npy"
+                    name2=os.path.join(path2,filename2)
+                    np.save(name2,temp2)
+
+
                 frameCounter += 1
 
                 
