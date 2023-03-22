@@ -229,7 +229,7 @@ def main():
                     temp=(TP(Ft_p[batchIndex].cpu().detach())).resize(videoFrames.origDim, Image.BILINEAR)
                     temp.save(os.path.join(outputPath, str(frameCounter + args.sf * batchIndex).zfill(8) + ".png"))
                     
-                    temp1=F_t_0_f.numpy()
+                    temp1=F_t_0_f[batchIndex].numpy()
                     path1='/content/Flow0_npy/'
                     isExist = os.path.exists(path1)
                     if isExist==False:
@@ -239,7 +239,7 @@ def main():
                     np.save(name1,temp1)
 
 
-                    temp2=F_t_1_f.numpy()
+                    temp2=F_t_1_f[batchIndex].numpy()
                     path2='/content/Flow1_npy/'
                     isExist = os.path.exists(path2)
                     if isExist==False:
@@ -248,7 +248,7 @@ def main():
                     name2=os.path.join(path2,filename2)
                     np.save(name2,temp2)
 
-                    temp1=F_0_1.numpy()
+                    temp1=F_0_1[batchIndex].numpy()
                     path1='/content/Flow01_npy/'
                     isExist = os.path.exists(path1)
                     if isExist==False:
@@ -258,7 +258,7 @@ def main():
                     np.save(name1,temp1)
 
 
-                    temp2=F_1_0.numpy()
+                    temp2=F_1_0[batchIndex].numpy()
                     path2='/content/Flow10_npy/'
                     isExist = os.path.exists(path2)
                     if isExist==False:
